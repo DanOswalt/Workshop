@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Address from './Address.js';
 import Stamp from './Stamp.js';
 
