@@ -2,7 +2,7 @@ import React from 'react';
 import Timer from './Timer.js';
 import './App.css';
 
-const seconds = 360;
+const seconds = 10;
 
 function App() {
   return (

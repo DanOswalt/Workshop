@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Timer = ({ initialTotalSeconds }) => {
-    let [ totalSeconds, setTotalSeconds ] = useState(initialTotalSeconds);
-    const [ intervalId, setIntervalId ] = useState(null);
+    let [ currentTotalSeconds, setcurrentTotalSeconds ] = useState(initialTotalSeconds);
+    let [ intervalId, setIntervalId ] = useState(null);
     const [ hasBegun, setStart] = useState(false);
     const [ isFinished, setFinished ] = useState(false);
-    const [ currentTime, setCurrentTime ] = useState("00:00:00")
+    const [ currentDisplayTime, setCurrentDisplayTime ] = useState("00:00:00")
+
+    useEffect(() => { updateTimeDisplay(initialTotalSeconds) }, []);
 
     const toggleTime = () => {
         // play/pause button should be hidden if not begun or finished, but just in ase
@@ -15,35 +17,52 @@ const Timer = ({ initialTotalSeconds }) => {
             clearInterval(intervalId);
             setIntervalId(null);
         } else {
-            setIntervalId(setInterval(countdown, 1000));
+            startClock();
         }
+    }
+
+    const startClock = () => {
+        intervalId = setInterval(countdown, 1000);
+        setIntervalId(intervalId);
     }
 
     // temporarily show a start button before countdown initiated instead of play/pause
     const handleBegin = () => {
         setStart(true);
-        toggleTime();
+        startClock();
+    }
+
+    const handleRestart = () => {
+        clearInterval(intervalId);
+        currentTotalSeconds = initialTotalSeconds;
+        setStart(false);
+        setFinished(false);
+        updateTimeDisplay(currentTotalSeconds);
     }
 
     const countdown = () => {
-        setTotalSeconds(totalSeconds--);
-        updateTimeDisplay();
-
-        if (totalSeconds === 0) {
+        setcurrentTotalSeconds(currentTotalSeconds--);
+        
+        if (currentTotalSeconds === 0) {
+            console.log(intervalId)
             setFinished(true);
+            clearInterval(intervalId);
+            setIntervalId(null);
         }
+
+        updateTimeDisplay(currentTotalSeconds);
     }
 
-    const updateTimeDisplay = () => {
-        // convert totalSeconds to hours and minutes
+    const updateTimeDisplay = (currentTime) => {
+        // convert currentTotalSeconds to hours and minutes
 
-        let hours = formatAsText(parseInt(totalSeconds / (60 * 60)));
-        let minutes = formatAsText(parseInt(totalSeconds / 60 - (hours * 60)));
-        let seconds = formatAsText(parseInt(totalSeconds - (hours * 60 * 60) - (minutes * 60)));
+        let hours = formatAsText(parseInt(currentTime / (60 * 60)));
+        let minutes = formatAsText(parseInt(currentTime / 60 - (hours * 60)));
+        let seconds = formatAsText(parseInt(currentTime - (hours * 60 * 60) - (minutes * 60)));
 
-        const time = `${hours}: ${minutes} : ${seconds}`;
+        const time = `${hours}:${minutes}:${seconds}`;
 
-        setCurrentTime(time);
+        setCurrentDisplayTime(time);
     }
 
     const formatAsText = (num) => {
@@ -52,9 +71,10 @@ const Timer = ({ initialTotalSeconds }) => {
 
     return (
         <div className="Timer">
-            <button onClick={handleBegin}>Start!</button>
-            <button onClick={toggleTime}>Start/Stop</button>
-            <p>{currentTime}</p>
+            {!hasBegun && <button onClick={handleBegin}>Start!</button>}
+            {hasBegun && !isFinished && <button onClick={toggleTime}>{intervalId ? "Pause" : "Play"}</button>}
+            {hasBegun && <button onClick={handleRestart}>Restart</button>}
+            <p>{currentDisplayTime}</p>
         </div>
     )
 
